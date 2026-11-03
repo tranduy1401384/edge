@@ -1,0 +1,45 @@
+server:
+  port: 9000
+
+spring:
+  reactor:
+    context-propagation: auto
+  application:
+    name: edge
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://54.81.93.101:8080/realms/users
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: accounts
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/accounts-journey/**
+              filters:
+                - StripPrefix=2
+            - id: profile
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/profile/**
+              filters:
+                - StripPrefix=2
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+logging:
+  structured:
+    format:
+      console: ecs
+    ecs:
+      service:
+        name: ${spring.application.name}
+        environment: dev
+  level:
+    root: info
